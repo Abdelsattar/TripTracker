@@ -1,4 +1,4 @@
-package com.example.triptracker.di
+package com.example.triptracker.helpers.di
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Scheduler

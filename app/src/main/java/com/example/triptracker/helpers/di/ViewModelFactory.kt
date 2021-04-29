@@ -1,4 +1,4 @@
-package com.example.triptracker.di
+package com.example.triptracker.helpers.di
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider

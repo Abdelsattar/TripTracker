@@ -1,4 +1,4 @@
-package com.example.triptracker.di
+package com.example.triptracker.helpers.di
 
 import com.example.triptracker.data.remote.service.TripService
 import com.example.triptracker.data.repository.TripRepo

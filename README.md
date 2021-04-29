@@ -1,10 +1,12 @@
 # TripTracker
 
-
+# Description
+ this is app that simulate a trip from a client side from pickup point to a drop off point using websockets
+ 
 # How to build the app
-1- clone the repo
-2- open the app in android studio
-3- get your own google map api key
+- clone the repo
+- open the app in android studio
+- get your own google map api key
  (follow the directions here: https://developers.google.com/maps/documentation/android/start#get-key)
-4- create a key name GoogleMapsAPIKey in your local.properties
-5- run the application
+- create a keys name GoogleMapsAPIKey, websocketEndpoint in your local.properties and put your values
+- run the application

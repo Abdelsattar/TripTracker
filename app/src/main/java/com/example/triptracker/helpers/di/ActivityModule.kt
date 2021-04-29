@@ -1,10 +1,10 @@
-package com.example.triptracker.di
+package com.example.triptracker.helpers.di
 
 import com.example.triptracker.ui.home.MainActivity
 import dagger.Module
 import dagger.android.ContributesAndroidInjector
 
- @Module
+@Module
 abstract class ActivityModule {
 
     @ContributesAndroidInjector

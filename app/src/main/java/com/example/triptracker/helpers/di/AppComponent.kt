@@ -1,4 +1,4 @@
-package com.example.triptracker.di
+package com.example.triptracker.helpers.di
 
 import android.app.Application
 import com.example.triptracker.ApplicationClass
