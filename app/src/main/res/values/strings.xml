@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Trip tracker</string>
+    <string name="title_activity_home">Map</string>
+</resources>
