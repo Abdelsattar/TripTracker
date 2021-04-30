@@ -8,7 +8,7 @@ import okhttp3.WebSocketListener
 
 class WebSocketCallBack : WebSocketListener() {
 
-    override fun onMessage(webSocket: WebSocket?, text: String?) {
+    override fun onMessage(webSocket: WebSocket, text: String) {
         RxBus.publish(RxEvent.Message(text))
         Log.d("Server", "$text")
     }

@@ -7,6 +7,7 @@ import dagger.android.ContributesAndroidInjector
 @Module
 abstract class ActivityModule {
 
+    @ActivityScoped
     @ContributesAndroidInjector
     abstract fun contributeMainActivity(): MainActivity?
 }
