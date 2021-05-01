@@ -1,6 +1,5 @@
 package com.example.triptracker.ui.home
 
-import android.os.Bundle
 import android.util.Log
 import com.example.triptracker.R
 import com.example.triptracker.databinding.ActivityMainBinding
@@ -16,7 +15,8 @@ import com.google.android.gms.maps.model.MarkerOptions
 class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), OnMapReadyCallback {
 
     private lateinit var mMap: GoogleMap
-    
+    private val TAG = "MainActivity"
+
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
 
@@ -46,8 +46,28 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), OnMapRe
 
 
     override fun bindViewModel() {
-        viewModel.getUpdates().subscribe {
-            Log.e("MainActivity", it)
+
+        val updates = viewModel.getUpdatesObservable()
+
+        updates.bookingOpened.subscribe {
+            Log.d(TAG,"Booking Opened $it ")
+
+        }
+        updates.vehicleLocation.subscribe {
+            Log.d(TAG,"vehicle Location update $it ")
+
+        }
+        updates.statusUpdated.subscribe {
+            Log.d(TAG,"status Updated $it ")
+
+        }
+        updates.stopsChanges.subscribe {
+            Log.d(TAG,"stops Changes ${it} ")
+
+        }
+        updates.bookingClosed.subscribe {
+            Log.d(TAG,"Booking Closed $it ")
+
         }
     }
 
