@@ -39,11 +39,8 @@ class MainViewModel @Inject constructor(
         compositeDisposable.add(RxBus.listen(RxEvent.Message::class.java)
             .map { it.message.toString() }
             .subscribe {
-                Log.d(TAG, "onViewAttached ${it.toString()}")
-
                 receivedMessageSubject.onNext(it)
                 parsingMessage(it)
-//                Ride<Data>()
             }
         )
     }
