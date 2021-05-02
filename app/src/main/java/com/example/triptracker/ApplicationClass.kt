@@ -35,20 +35,20 @@ class ApplicationClass : Application(), HasAndroidInjector {
     }
 
     private fun initSocket() {
-        val client = OkHttpClient.Builder()
-            .readTimeout(3, TimeUnit.SECONDS)
-            .build()
-
-        val request = Request.Builder()
-            .url(BuildConfig.WebsocketEndpoint)
-            .build()
-
-        socket = client.newWebSocket(request, WebSocketCallBack())
+//        val client = OkHttpClient.Builder()
+//            .readTimeout(3, TimeUnit.SECONDS)
+//            .build()
+//
+//        val request = Request.Builder()
+//            .url(BuildConfig.WebsocketEndpoint)
+//            .build()
+//
+//        socket = client.newWebSocket(request, WebSocketCallBack())
     }
 
-    fun sendMessage(message: String) {
-        socket?.send(message)
-    }
+//    fun sendMessage(message: String) {
+//        socket?.send(message)
+//    }
 
     override fun androidInjector(): AndroidInjector<Any> = dispatchingAndroidInjector
 

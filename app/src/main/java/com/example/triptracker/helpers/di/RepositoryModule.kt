@@ -4,6 +4,8 @@ import com.example.triptracker.data.repository.TripRepo
 import com.google.maps.GeoApiContext
 import dagger.Module
 import dagger.Provides
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import javax.inject.Singleton
 
 
@@ -12,8 +14,12 @@ class RepositoryModule {
 
     @Provides
     @Singleton
-    fun getTripRepository(geoApiContext: GeoApiContext): TripRepo {
-        return TripRepo(geoApiContext)
+    fun getTripRepository(
+        geoApiContext: GeoApiContext,
+        okHttpClient: OkHttpClient,
+        request: Request
+    ): TripRepo {
+        return TripRepo(geoApiContext, okHttpClient, request)
     }
 
 }

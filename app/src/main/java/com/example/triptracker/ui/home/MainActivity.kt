@@ -6,7 +6,10 @@ import androidx.lifecycle.Observer
 import com.example.triptracker.R
 import com.example.triptracker.data.Resource
 import com.example.triptracker.databinding.ActivityMainBinding
+import com.example.triptracker.helpers.Utils.AnimationUtils.carAnimator
 import com.example.triptracker.helpers.Utils.AnimationUtils.polyLineAnimator
+import com.example.triptracker.helpers.Utils.MapUtils.getCarBitmap
+import com.example.triptracker.helpers.Utils.MapUtils.getRotation
 import com.example.triptracker.helpers.Utils.MapUtils.getStopBitmap
 import com.example.triptracker.helpers.extentions.with
 import com.example.triptracker.ui.base.BaseActivity
@@ -20,16 +23,17 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), OnMapRe
 
     private lateinit var mMap: GoogleMap
     private val TAG = "MainActivity"
-
-    private var currentLatLng: LatLng? = null
     private var pickUpLatLng: com.google.maps.model.LatLng? = null
     private var dropLatLng: com.google.maps.model.LatLng? = null
-    private val nearbyCabMarkerList = arrayListOf<Marker>()
 
     private var destinationMarker: Marker? = null
     private var originMarker: Marker? = null
     private var greyPolyLine: Polyline? = null
     private var blackPolyline: Polyline? = null
+    private var previousLatLngFromServer: LatLng? = null
+    private var currentLatLngFromServer: LatLng? = null
+    private var movingCarMarker: Marker? = null
+    private lateinit var rideUpdates: MainViewModel.RideUpdates
 
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
@@ -46,6 +50,12 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), OnMapRe
 
     override fun setupView() {
         setUpMapView()
+
+        binding.btnStartRide.setOnClickListener {
+            binding.btnStartRide.text = getString(R.string.your_ride_is_coming)
+            binding.btnStartRide.isEnabled = false
+            startRide()
+        }
     }
 
     private fun setUpMapView() {
@@ -54,39 +64,10 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), OnMapRe
             .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
 
-
     }
 
-
     override fun bindViewModel() {
-
-        val updates = viewModel.getUpdatesObservable()
-
-        updates.bookingOpened.subscribe {
-            Log.d(TAG, "Booking Opened $it ")
-
-        }
-
-        updates.vehicleLocation.subscribe {
-            Log.d(TAG, "vehicle Location update $it ")
-
-        }
-
-        updates.statusUpdated.subscribe {
-            Log.d(TAG, "status Updated $it ")
-
-        }
-
-        updates.stopsChanges.subscribe {
-            Log.d(TAG, "stops Changes ${it} ")
-
-        }
-
-        updates.bookingClosed.subscribe {
-            Log.d(TAG, "Booking Closed $it ")
-
-        }
-
+//        binding.view
     }
 
     //region map functions
@@ -103,14 +84,54 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), OnMapRe
                     runOnUiThread {
                         showPath(it)
                     }
-
                 }
                 is Resource.Error -> {
                     //todo show some error
                 }
+                else -> {
+
+                }
             }
 
         })
+    }
+
+    private fun startRide() {
+
+        rideUpdates = viewModel.getRideUpdatesObservable()
+
+        rideUpdates.bookingOpened.subscribe {
+            Log.d(TAG, "Booking Opened $it ")
+
+        }
+
+        rideUpdates.vehicleLocation.subscribe(
+            {
+                Log.d(TAG, "vehicle Location update $it ")
+
+                runOnUiThread {
+                    updateCarLocation(LatLng(it.lat, it.lng))
+                }
+            }, { e ->
+                Log.d(TAG, "vehicle Location update err ${e.localizedMessage} ")
+
+            }
+        )
+
+        rideUpdates.statusUpdated.subscribe {
+            Log.d(TAG, "status Updated $it ")
+
+        }
+
+        rideUpdates.stopsChanges.subscribe {
+            Log.d(TAG, "stops Changes ${it} ")
+
+        }
+
+        rideUpdates.bookingClosed.subscribe {
+            Log.d(TAG, "Booking Closed $it ")
+
+        }
 
     }
 
@@ -153,6 +174,63 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), OnMapRe
         return mMap.addMarker(
             MarkerOptions().position(latLng).flat(true).icon(bitmapDescriptor)
         )
+    }
+
+    private fun addCarMarkerAndGet(latLng: LatLng): Marker {
+        val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(getCarBitmap(this))
+        return mMap.addMarker(MarkerOptions().position(latLng).flat(true).icon(bitmapDescriptor))
+    }
+
+    private fun moveCamera(latLng: LatLng?) {
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng))
+    }
+
+    private fun animateCamera(latLng: LatLng?) {
+        val cameraPosition = CameraPosition.Builder().target(latLng).zoom(15.5f).build()
+        mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition))
+    }
+
+    private fun updateCarLocation(latLng: LatLng) {
+        Log.d(TAG, "updateCabLocation")
+
+        if (movingCarMarker == null) {
+            movingCarMarker = addCarMarkerAndGet(latLng)
+        }
+
+        if (previousLatLngFromServer == null) {
+
+            currentLatLngFromServer = latLng
+            previousLatLngFromServer = currentLatLngFromServer
+            movingCarMarker?.position = currentLatLngFromServer
+            movingCarMarker?.setAnchor(0.5f, 0.5f)
+            animateCamera(currentLatLngFromServer)
+        } else {
+
+            previousLatLngFromServer = currentLatLngFromServer
+            currentLatLngFromServer = latLng
+            val valueAnimator = carAnimator()
+            valueAnimator.addUpdateListener { va ->
+
+                if (currentLatLngFromServer != null && previousLatLngFromServer != null) {
+
+                    val multiplier = va.animatedFraction
+                    val nextLocation = LatLng(
+                        multiplier * currentLatLngFromServer!!.latitude + (1 - multiplier)
+                                * previousLatLngFromServer!!.latitude,
+                        multiplier * currentLatLngFromServer!!.longitude + (1 - multiplier)
+                                * previousLatLngFromServer!!.longitude
+                    )
+                    movingCarMarker?.position = nextLocation
+                    movingCarMarker?.setAnchor(0.5f, 0.5f)
+                    val rotation = getRotation(previousLatLngFromServer!!, nextLocation)
+                    if (!rotation.isNaN()) {
+                        movingCarMarker?.rotation = rotation
+                    }
+                    animateCamera(nextLocation)
+                }
+            }
+            valueAnimator.start()
+        }
     }
 
     //endregion

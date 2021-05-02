@@ -37,7 +37,6 @@ class MainViewModel @Inject constructor(
     private val statusUpdatedSubject: PublishSubject<String> = PublishSubject.create()
     private val stopsChangesSubject: PublishSubject<List<VehicleLocation>> = PublishSubject.create()
     private val bookingClosedSubject: PublishSubject<Boolean> = PublishSubject.create()
-
     override fun onViewAttached() {
         compositeDisposable.add(RxBus.listen(RxEvent.Message::class.java)
             .map { it.message.toString() }
@@ -63,12 +62,10 @@ class MainViewModel @Inject constructor(
                 bookingOpenedSubject.onNext(gson.fromJson(data, Data::class.java))
             }
             EVENT_LOCATION_UPDATE -> {
-                Log.d(TAG, "EVENT_LOCATION_UPDATE  ${data.toString()}")
-
                 vehicleLocationSubject.onNext(gson.fromJson(data, VehicleLocation::class.java))
             }
             EVENT_STATUS_UPDATE -> {
-                Log.d(TAG, "EVENT_STOPS_UPDATE ")
+                Log.d(TAG, "EVENT_STATUS_UPDATE ")
 
                 statusUpdatedSubject.onNext(data)
             }
@@ -81,7 +78,7 @@ class MainViewModel @Inject constructor(
                 stopsChangesSubject.onNext(vehicleLocationList)
             }
             EVENT_BOOKING_CLOSED -> {
-                Log.d(TAG, "EVENT_STOPS_UPDATE ${EVENT_BOOKING_CLOSED}")
+                Log.d(TAG, "EVENT_BOOKING_CLOSED ${EVENT_BOOKING_CLOSED}")
 
                 bookingClosedSubject.onNext(true)
             }
@@ -92,7 +89,7 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    class Updates(
+    class RideUpdates(
         val bookingOpened: Observable<Data>,
         val vehicleLocation: Observable<VehicleLocation>,
         val statusUpdated: Observable<String>,
@@ -100,7 +97,8 @@ class MainViewModel @Inject constructor(
         val bookingClosed: Observable<Boolean>
     )
 
-    fun getUpdatesObservable(): Updates {
+    fun getRideUpdatesObservable(): RideUpdates {
+        tripRepo.connectToRideWebSockets()
 
         val bookingOpenedObservable = bookingOpenedSubject.share()
         val vehicleLocationObservable = vehicleLocationSubject.share()
@@ -108,7 +106,7 @@ class MainViewModel @Inject constructor(
         val stopsChangesObservable = stopsChangesSubject.share()
         val bookingClosedObservable = bookingClosedSubject.share()
 
-        return Updates(
+        return RideUpdates(
             bookingOpenedObservable,
             vehicleLocationObservable,
             statusUpdatedObservable,
@@ -122,6 +120,6 @@ class MainViewModel @Inject constructor(
         pickup: LatLng,
         dropOff: LatLng
     ): MutableLiveData<Resource<List<com.google.android.gms.maps.model.LatLng>>> {
-        return tripRepo.getDirections(pickup,dropOff)
+        return tripRepo.getDirections(pickup, dropOff)
     }
 }

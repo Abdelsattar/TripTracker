@@ -32,12 +32,12 @@
                 android:layout_height="9dp"
                 android:layout_marginStart="16dp"
                 android:background="@drawable/bg_circle_black"
-                app:layout_constraintBottom_toBottomOf="@+id/pickUpTextView"
+                app:layout_constraintBottom_toBottomOf="@+id/txtPickUp"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="@+id/pickUpTextView" />
+                app:layout_constraintTop_toTopOf="@+id/txtPickUp" />
 
             <androidx.appcompat.widget.AppCompatTextView
-                android:id="@+id/pickUpTextView"
+                android:id="@+id/txtPickUp"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
@@ -73,12 +73,12 @@
                 android:layout_height="9dp"
                 android:layout_marginStart="16dp"
                 android:background="@android:color/black"
-                app:layout_constraintBottom_toBottomOf="@+id/dropTextView"
+                app:layout_constraintBottom_toBottomOf="@+id/tvDropOff"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="@+id/dropTextView" />
+                app:layout_constraintTop_toTopOf="@+id/tvDropOff" />
 
             <androidx.appcompat.widget.AppCompatTextView
-                android:id="@+id/dropTextView"
+                android:id="@+id/tvDropOff"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
@@ -99,8 +99,26 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/dropIndicator"
-                app:layout_constraintTop_toBottomOf="@+id/pickUpTextView" />
+                app:layout_constraintTop_toBottomOf="@+id/txtPickUp" />
         </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnStartRide"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:layout_margin="16dp"
+            android:background="@android:color/black"
+            android:padding="12dp"
+            android:text="@string/start_ride"
+            android:onClick="startRide"
+            android:textColor="@android:color/white"
+            android:textSize="16sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent">
+
+        </androidx.appcompat.widget.AppCompatButton>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
