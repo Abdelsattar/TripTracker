@@ -14,7 +14,8 @@ import javax.inject.Singleton
         ActivityModule::class,
         RepositoryModule::class,
         ViewModelModule::class,
-        SchedulerModule::class
+        SchedulerModule::class,
+        AppModule::class
     ]
 )
 interface AppComponent {

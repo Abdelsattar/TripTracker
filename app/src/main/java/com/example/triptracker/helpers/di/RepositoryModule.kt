@@ -1,7 +1,7 @@
 package com.example.triptracker.helpers.di
 
-import com.example.triptracker.data.remote.service.TripService
 import com.example.triptracker.data.repository.TripRepo
+import com.google.maps.GeoApiContext
 import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton
@@ -12,8 +12,8 @@ class RepositoryModule {
 
     @Provides
     @Singleton
-    fun getTripRepository(tripService: TripService): TripRepo {
-        return TripRepo(tripService)
+    fun getTripRepository(geoApiContext: GeoApiContext): TripRepo {
+        return TripRepo(geoApiContext)
     }
 
 }

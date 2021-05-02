@@ -1,8 +1,11 @@
 package com.example.triptracker.ui.home
 
 import android.util.Log
+import androidx.lifecycle.MutableLiveData
+import com.example.triptracker.data.Resource
 import com.example.triptracker.data.remote.model.Data
 import com.example.triptracker.data.remote.model.VehicleLocation
+import com.example.triptracker.data.repository.TripRepo
 import com.example.triptracker.helpers.Constants.DATA
 import com.example.triptracker.helpers.Constants.EVENT_BOOKING_CLOSED
 import com.example.triptracker.helpers.Constants.EVENT_BOOKING_EVENT
@@ -10,12 +13,12 @@ import com.example.triptracker.helpers.Constants.EVENT_LOCATION_UPDATE
 import com.example.triptracker.helpers.Constants.EVENT_STATUS_UPDATE
 import com.example.triptracker.helpers.Constants.EVENT_STOPS_UPDATE
 import com.example.triptracker.helpers.Constants.EVENT_TYPE
-import com.example.triptracker.helpers.di.BaseSchedulerProvider
 import com.example.triptracker.helpers.rx.RxBus
 import com.example.triptracker.helpers.rx.RxEvent
 import com.example.triptracker.ui.base.BaseViewModel
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.google.maps.model.LatLng
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.subjects.PublishSubject
 import org.json.JSONObject
@@ -23,7 +26,7 @@ import javax.inject.Inject
 
 
 class MainViewModel @Inject constructor(
-    private val schedulerProvider: BaseSchedulerProvider
+    private val tripRepo: TripRepo
 ) : BaseViewModel() {
 
     val TAG = "MainViewModel"
@@ -115,4 +118,10 @@ class MainViewModel @Inject constructor(
 
     }
 
+    fun getDirections(
+        pickup: LatLng,
+        dropOff: LatLng
+    ): MutableLiveData<Resource<List<com.google.android.gms.maps.model.LatLng>>> {
+        return tripRepo.getDirections(pickup,dropOff)
+    }
 }

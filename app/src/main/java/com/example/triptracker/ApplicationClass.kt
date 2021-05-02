@@ -3,6 +3,8 @@ package com.example.triptracker
 import android.app.Application
 import com.example.triptracker.data.remote.WebSocketCallBack
 import com.example.triptracker.helpers.di.DaggerAppComponent
+import com.example.triptracker.ui.home.MainActivity
+import com.google.maps.GeoApiContext
 import dagger.android.AndroidInjector
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasAndroidInjector
@@ -32,7 +34,7 @@ class ApplicationClass : Application(), HasAndroidInjector {
             .build().inject(this)
     }
 
-    private fun initSocket(){
+    private fun initSocket() {
         val client = OkHttpClient.Builder()
             .readTimeout(3, TimeUnit.SECONDS)
             .build()
@@ -44,9 +46,10 @@ class ApplicationClass : Application(), HasAndroidInjector {
         socket = client.newWebSocket(request, WebSocketCallBack())
     }
 
-    fun sendMessage(message: String){
+    fun sendMessage(message: String) {
         socket?.send(message)
     }
+
     override fun androidInjector(): AndroidInjector<Any> = dispatchingAndroidInjector
 
 } 
