@@ -50,10 +50,9 @@ class MainViewModel @Inject constructor(
     private fun parsingMessage(data: String) {
         val jsonObject = JSONObject(data)
         val eventType = jsonObject.getString(EVENT_TYPE)
-        Log.d(TAG, "parsingMessage ${eventType}")
+        Log.d(TAG, "parsingMessage $eventType")
 
         val data: String? = jsonObject.getString(DATA)
-        Log.e(TAG, data.toString())
         val gson = Gson()
         when (eventType) {
             EVENT_BOOKING_EVENT -> {
@@ -83,7 +82,7 @@ class MainViewModel @Inject constructor(
                 bookingClosedSubject.onNext(true)
             }
             else -> {
-                Log.e(TAG, "Else ->  ${eventType}")
+                Log.d(TAG, "else ->  ${eventType}")
             }
 
         }
@@ -118,8 +117,9 @@ class MainViewModel @Inject constructor(
 
     fun getDirections(
         pickup: LatLng,
-        dropOff: LatLng
+        dropOff: LatLng,
+        rideStops: List<LatLng>?
     ): MutableLiveData<Resource<List<com.google.android.gms.maps.model.LatLng>>> {
-        return tripRepo.getDirections(pickup, dropOff)
+        return tripRepo.getDirections(pickup, dropOff,rideStops)
     }
 }

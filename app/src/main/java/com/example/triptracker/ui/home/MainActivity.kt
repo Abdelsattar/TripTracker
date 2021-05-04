@@ -2,15 +2,20 @@ package com.example.triptracker.ui.home
 
 import android.graphics.Color
 import android.util.Log
+import android.widget.Toast
+import android.widget.Toast.LENGTH_SHORT
 import androidx.lifecycle.Observer
 import com.example.triptracker.R
 import com.example.triptracker.data.Resource
+import com.example.triptracker.data.remote.model.Data
+import com.example.triptracker.data.remote.model.VehicleLocation
 import com.example.triptracker.databinding.ActivityMainBinding
+import com.example.triptracker.helpers.Constants
 import com.example.triptracker.helpers.Utils.AnimationUtils.carAnimator
-import com.example.triptracker.helpers.Utils.AnimationUtils.polyLineAnimator
 import com.example.triptracker.helpers.Utils.MapUtils.getCarBitmap
 import com.example.triptracker.helpers.Utils.MapUtils.getRotation
 import com.example.triptracker.helpers.Utils.MapUtils.getStopBitmap
+import com.example.triptracker.helpers.extentions.showToast
 import com.example.triptracker.helpers.extentions.with
 import com.example.triptracker.ui.base.BaseActivity
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -21,25 +26,33 @@ import com.google.android.gms.maps.model.*
 
 class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), OnMapReadyCallback {
 
+
+    //region declare fields
     private lateinit var mMap: GoogleMap
     private val TAG = "MainActivity"
     private var pickUpLatLng: com.google.maps.model.LatLng? = null
     private var dropLatLng: com.google.maps.model.LatLng? = null
+    private var vehicleLocation: com.google.maps.model.LatLng? = null
+    private var previousLatLngFromServer: LatLng? = null
+    private var currentLatLngFromServer: LatLng? = null
 
     private var destinationMarker: Marker? = null
     private var originMarker: Marker? = null
+    private var stopMarker: Marker? = null
+    private var movingCarMarker: Marker? = null
+
     private var greyPolyLine: Polyline? = null
     private var blackPolyline: Polyline? = null
-    private var previousLatLngFromServer: LatLng? = null
-    private var currentLatLngFromServer: LatLng? = null
-    private var movingCarMarker: Marker? = null
+
     private lateinit var rideUpdates: MainViewModel.RideUpdates
+    private var rideStops = ArrayList<com.google.maps.model.LatLng>()
+    private var showStops: Boolean = false
+    private val BerlinLatLng = LatLng(52.5200, 13.4050)
+    //endregion
 
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
-
-        getDirections()
-
+        animateCamera(BerlinLatLng)
     }
 
     override fun layoutId() = R.layout.activity_main
@@ -50,7 +63,6 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), OnMapRe
 
     override fun setupView() {
         setUpMapView()
-
         binding.btnStartRide.setOnClickListener {
             binding.btnStartRide.text = getString(R.string.your_ride_is_coming)
             binding.btnStartRide.isEnabled = false
@@ -66,74 +78,159 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), OnMapRe
 
     }
 
-    override fun bindViewModel() {
-//        binding.view
-    }
-
-    //region map functions
-
-    private fun getDirections() {
-
-        pickUpLatLng = com.google.maps.model.LatLng(52.52663, 13.411632)
-        dropLatLng = com.google.maps.model.LatLng(52.51376919675238, 13.393197655677795)
-
-        viewModel.getDirections(pickUpLatLng!!, dropLatLng!!).observe(this, Observer { status ->
-
-            when (status) {
-                is Resource.Success -> status.data?.let {
-                    runOnUiThread {
-                        showPath(it)
-                    }
-                }
-                is Resource.Error -> {
-                    //todo show some error
-                }
-                else -> {
-
-                }
-            }
-
-        })
-    }
+    override fun bindViewModel() {}
 
     private fun startRide() {
 
         rideUpdates = viewModel.getRideUpdatesObservable()
 
-        rideUpdates.bookingOpened.subscribe {
-            Log.d(TAG, "Booking Opened $it ")
+        rideUpdates.bookingOpened.subscribe({ data ->
+            handelBookingOpened(data)
 
-        }
+        }, { e ->
+            Log.d(TAG, "Booking Opened err ${e.localizedMessage} ")
+        })
 
         rideUpdates.vehicleLocation.subscribe(
             {
-                Log.d(TAG, "vehicle Location update $it ")
-
-                runOnUiThread {
-                    updateCarLocation(LatLng(it.lat, it.lng))
-                }
+                handelVehicleLocationChanges(it)
             }, { e ->
                 Log.d(TAG, "vehicle Location update err ${e.localizedMessage} ")
-
             }
         )
 
-        rideUpdates.statusUpdated.subscribe {
-            Log.d(TAG, "status Updated $it ")
+        rideUpdates.statusUpdated.subscribe({
+            handelStatusChanges(it)
 
-        }
+        }, { e ->
+            Log.d(TAG, "Status Updated err ${e.localizedMessage} ")
 
-        rideUpdates.stopsChanges.subscribe {
-            Log.d(TAG, "stops Changes ${it} ")
+        })
 
-        }
+        rideUpdates.stopsChanges.subscribe({
 
-        rideUpdates.bookingClosed.subscribe {
-            Log.d(TAG, "Booking Closed $it ")
+            handelStopsChanges(it)
+        }, { e ->
+            Log.d(TAG, "Stops Changes err ${e.localizedMessage} ")
 
+        })
+
+        rideUpdates.bookingClosed.subscribe({
+            handelBookingClosed(it)
+        }, { e ->
+            Log.d(TAG, "Booking Closed err ${e.localizedMessage} ")
+
+        })
+
+    }
+
+    private fun handelBookingOpened(data: Data) {
+        Log.d(TAG, "Booking Opened $data ")
+        pickUpLatLng =
+            com.google.maps.model.LatLng(data.pickupLocation.lat, data.pickupLocation.lng)
+        dropLatLng =
+            com.google.maps.model.LatLng(data.dropoffLocation.lat, data.dropoffLocation.lng)
+        rideStops.addAll(
+            data.intermediateStopLocations.map {
+                com.google.maps.model.LatLng(
+                    it.lat,
+                    it.lng
+                )
+            } as ArrayList<com.google.maps.model.LatLng>
+        )
+
+        vehicleLocation =
+            com.google.maps.model.LatLng(data.vehicleLocation.lat, data.vehicleLocation.lng)
+
+        runOnUiThread {
+
+            binding.tvPickUp.text = data.pickupLocation.address
+            binding.tvDropOff.text = data.dropoffLocation.address
+            getDirections(vehicleLocation!!, pickUpLatLng!!, null)
         }
 
     }
+
+    private fun handelVehicleLocationChanges(newVehicleLocation: VehicleLocation) {
+
+        Log.d(TAG, "vehicle Location update $newVehicleLocation ")
+
+        runOnUiThread {
+            vehicleLocation =
+                com.google.maps.model.LatLng(newVehicleLocation.lat, newVehicleLocation.lng)
+            updateCarLocation(LatLng(newVehicleLocation.lat, newVehicleLocation.lng))
+        }
+    }
+
+    private fun handelStatusChanges(status: String) {
+        Log.d(TAG, "status Updated $status ")
+
+        when (status) {
+            Constants.EVENT_STATUS_INVEHICLE -> {
+                runOnUiThread {
+                    binding.btnStartRide.text = getString(R.string.you_are_on_a_trip)
+                    greyPolyLine?.remove()
+                    blackPolyline?.remove()
+                    blackPolyline?.points?.clear()
+
+                    originMarker?.remove()
+                    destinationMarker?.remove()
+                    showStops = true
+                    getDirections(pickUpLatLng!!, dropLatLng!!, rideStops)
+                }
+            }
+            Constants.EVENT_STATUS_DROPPOFF -> {
+                binding.btnStartRide.text = getString(R.string.your_trip_ended)
+            }
+            else -> {
+                binding.btnStartRide.text = getString(R.string.start_new_ride)
+            }
+        }
+    }
+
+    private fun handelStopsChanges(stops: List<VehicleLocation>) {
+        Log.d(TAG, "Stops Changes $stops ")
+        //TODO handle when stops change
+    }
+
+    private fun handelBookingClosed(it: Boolean?) {
+        Log.d(TAG, "Booking Closed $it ")
+        runOnUiThread {
+            binding.btnStartRide.isEnabled = true
+            binding.btnStartRide.text = getString(R.string.start_new_ride)
+
+            Toast.makeText(this, getString(R.string.your_trip_ended), LENGTH_SHORT).show()
+        }
+    }
+
+    //region map functions
+
+    private fun getDirections(
+        startAddress: com.google.maps.model.LatLng,
+        endAddress: com.google.maps.model.LatLng,
+        stops: List<com.google.maps.model.LatLng>?
+    ) {
+
+        viewModel.getDirections(startAddress, endAddress, stops)
+            .observe(this, Observer { status ->
+                Log.d(TAG, "getting direction ${status.toString()} ")
+                when (status) {
+                    is Resource.Success -> status.data?.let {
+                        runOnUiThread {
+                            showPath(it)
+                        }
+                    }
+                    is Resource.Error -> {
+                        status.errorMessage?.let { showToast(it) }
+                    }
+                    else -> {
+                        showToast("Error Getting directions")
+                    }
+                }
+
+            })
+    }
+
 
     private fun showPath(latLngList: List<LatLng>) {
         val builder = LatLngBounds.Builder()
@@ -143,15 +240,10 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), OnMapRe
         val bounds = builder.build()
         mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 2))
 
-        val polylineOptions = PolylineOptions()
-        polylineOptions.color(Color.GRAY)
-        polylineOptions.width(5f)
-        polylineOptions.addAll(latLngList)
-        greyPolyLine = mMap.addPolyline(polylineOptions)
-
         val blackPolylineOptions = PolylineOptions()
         blackPolylineOptions.width(5f)
         blackPolylineOptions.color(Color.BLACK)
+        blackPolylineOptions.addAll(latLngList)
         blackPolyline = mMap.addPolyline(blackPolylineOptions)
 
         originMarker = addOriginDestinationMarkerAndGet(latLngList[0])
@@ -160,13 +252,12 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), OnMapRe
         destinationMarker = addOriginDestinationMarkerAndGet(latLngList[latLngList.size - 1])
         destinationMarker?.setAnchor(0.5f, 0.5f)
 
-        val polylineAnimator = polyLineAnimator()
-        polylineAnimator.addUpdateListener { valueAnimator ->
-            val percentValue = (valueAnimator.animatedValue as Int)
-            val index = (greyPolyLine?.points!!.size * (percentValue / 100.0f)).toInt()
-            blackPolyline?.points = greyPolyLine?.points!!.subList(0, index)
+        if (showStops) {
+            rideStops.forEach {
+                stopMarker = addOriginDestinationMarkerAndGet(LatLng(it.lat, it.lng))
+                stopMarker?.setAnchor(0.5f, 0.5f)
+            }
         }
-        polylineAnimator.start()
     }
 
     private fun addOriginDestinationMarkerAndGet(latLng: LatLng): Marker? {
@@ -181,17 +272,13 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), OnMapRe
         return mMap.addMarker(MarkerOptions().position(latLng).flat(true).icon(bitmapDescriptor))
     }
 
-    private fun moveCamera(latLng: LatLng?) {
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng))
-    }
-
     private fun animateCamera(latLng: LatLng?) {
         val cameraPosition = CameraPosition.Builder().target(latLng).zoom(15.5f).build()
         mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition))
     }
 
     private fun updateCarLocation(latLng: LatLng) {
-        Log.d(TAG, "updateCabLocation")
+        Log.d(TAG, "updateCarLocation")
 
         if (movingCarMarker == null) {
             movingCarMarker = addCarMarkerAndGet(latLng)
@@ -232,7 +319,6 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), OnMapRe
             valueAnimator.start()
         }
     }
-
     //endregion
 
 }

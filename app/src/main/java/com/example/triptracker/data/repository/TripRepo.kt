@@ -26,15 +26,39 @@ class TripRepo @Inject constructor(
 
     fun getDirections(
         pickup: com.google.maps.model.LatLng,
-        dropOff: com.google.maps.model.LatLng
+        dropOff: com.google.maps.model.LatLng,
+        stops: List<com.google.maps.model.LatLng>? = null
     ): MutableLiveData<Resource<List<LatLng>>> {
+        Log.d(TAG, "Getting Directions")
 
+        tripPath.clear()
         val directionLiveData = MutableLiveData<Resource<List<LatLng>>>()
 
         val directionsApiRequest = DirectionsApiRequest(geoApiContext)
         directionsApiRequest.mode(TravelMode.DRIVING)
         directionsApiRequest.origin(pickup)
         directionsApiRequest.destination(dropOff)
+        directionsApiRequest.optimizeWaypoints(true)
+
+        var wayPointsStr = ""
+        stops?.let {
+
+            if (stops.size == 1)
+                directionsApiRequest.waypoints(stops[0])
+            else {
+                wayPointsStr = "${it[0]}"
+
+                for (i in it.indices) {
+                    wayPointsStr = if (i != 0) {
+                        "$wayPointsStr|${it[i]}"
+                    } else {
+                        "${it[i]}"
+                    }
+                }
+                directionsApiRequest.waypoints(wayPointsStr)
+            }
+        }
+
         directionsApiRequest.setCallback(object : PendingResult.Callback<DirectionsResult> {
             override fun onResult(result: DirectionsResult) {
                 Log.d(TAG, "onResult : ${Gson().toJson(result)}")
@@ -42,7 +66,7 @@ class TripRepo @Inject constructor(
                 val routeList = result.routes
 
                 if (routeList.isEmpty()) {
-                    directionLiveData.postValue(Resource.Error("routesNotAvailable"))
+                    directionLiveData.postValue(Resource.Error("Route not available"))
                 } else {
                     for (route in routeList) {
                         val path = route.overviewPolyline.decodePath()
@@ -67,7 +91,6 @@ class TripRepo @Inject constructor(
         )
         return directionLiveData
     }
-
 
     fun connectToRideWebSockets() {
         Log.d(TAG, "connectToRideWebSockets")

@@ -32,12 +32,12 @@
                 android:layout_height="9dp"
                 android:layout_marginStart="16dp"
                 android:background="@drawable/bg_circle_black"
-                app:layout_constraintBottom_toBottomOf="@+id/txtPickUp"
+                app:layout_constraintBottom_toBottomOf="@+id/tvPickUp"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="@+id/txtPickUp" />
+                app:layout_constraintTop_toTopOf="@+id/tvPickUp" />
 
             <androidx.appcompat.widget.AppCompatTextView
-                android:id="@+id/txtPickUp"
+                android:id="@+id/tvPickUp"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
@@ -99,7 +99,7 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/dropIndicator"
-                app:layout_constraintTop_toBottomOf="@+id/txtPickUp" />
+                app:layout_constraintTop_toBottomOf="@+id/tvPickUp" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <androidx.appcompat.widget.AppCompatButton

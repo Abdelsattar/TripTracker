@@ -95,11 +95,6 @@ dependencies {
     kapt "com.google.dagger:dagger-compiler:$dagger_version"
     kapt "com.google.dagger:dagger-android-processor:$dagger_version"
 
-    //Retorfit networking lib
-//    implementation "com.squareup.retrofit2:retrofit:$retrofit_version"
-//    implementation "com.squareup.retrofit2:converter-gson:$retrofit_version"
-//    implementation "com.squareup.retrofit2:adapter-rxjava3:$retrofit_version"
-
     implementation "com.squareup.okhttp3:okhttp:$okhttp_version"
 
     // Rx-java/Android for reactive programming

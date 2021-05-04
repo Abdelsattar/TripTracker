@@ -9,4 +9,8 @@ object Constants {
     const val EVENT_STOPS_UPDATE = "intermediateStopLocationsChanged"
     const val EVENT_BOOKING_CLOSED = "bookingClosed"
 
+
+    const val EVENT_STATUS_INVEHICLE = "inVehicle"
+    const val EVENT_STATUS_DROPPOFF = "droppedOff"
+
 }
