@@ -3,6 +3,13 @@
 # Description
  this is app that simulate a trip from a client side from pickup point to a drop off point using webSocket
  
+ <p align="center">
+  <img src="https://drive.google.com/uc?export=view&id=156_IGlLgIznoUmsVa49e50KvMk9QPoVE" width="250">
+  <img src="https://drive.google.com/uc?export=view&id=1wgZAJ6aYYv-6JHjCDG97F8OivmpjOzar" width="250">
+  <img src="https://drive.google.com/uc?export=view&id=10y4buByGcvJbscY9NxzyWJs5JCCbk5mv" width="250">
+</p>
+<br>
+ 
 ## How to build the app
 - clone the repo
 - open the app in android studio
