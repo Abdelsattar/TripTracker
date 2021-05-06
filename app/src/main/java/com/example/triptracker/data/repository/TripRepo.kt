@@ -3,7 +3,7 @@ package com.example.triptracker.data.repository
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import com.example.triptracker.data.Resource
-import com.example.triptracker.data.remote.WebSocketCallBack
+import com.example.triptracker.data.remote.WebSocketRideCallBack
 import com.google.android.gms.maps.model.LatLng
 import com.google.gson.Gson
 import com.google.maps.DirectionsApiRequest
@@ -18,21 +18,20 @@ import javax.inject.Inject
 class TripRepo @Inject constructor(
     private val geoApiContext: GeoApiContext,
     private val okHttpClient: OkHttpClient,
-    private val webSocket: Request
+    private val webSocketRequest: Request
 ) {
 
     val TAG = "TripRepo"
-    private var tripPath = arrayListOf<com.google.maps.model.LatLng>()
 
     fun getDirections(
         pickup: com.google.maps.model.LatLng,
         dropOff: com.google.maps.model.LatLng,
         stops: List<com.google.maps.model.LatLng>? = null
     ): MutableLiveData<Resource<List<LatLng>>> {
-        Log.d(TAG, "Getting Directions")
 
-        tripPath.clear()
+        var tripPath = arrayListOf<com.google.maps.model.LatLng>()
         val directionLiveData = MutableLiveData<Resource<List<LatLng>>>()
+        directionLiveData.value = Resource.Loading()
 
         val directionsApiRequest = DirectionsApiRequest(geoApiContext)
         directionsApiRequest.mode(TravelMode.DRIVING)
@@ -40,6 +39,7 @@ class TripRepo @Inject constructor(
         directionsApiRequest.destination(dropOff)
         directionsApiRequest.optimizeWaypoints(true)
 
+        //add stops as a way points
         var wayPointsStr = ""
         stops?.let {
 
@@ -84,7 +84,6 @@ class TripRepo @Inject constructor(
             }
 
             override fun onFailure(e: Throwable?) {
-                Log.d(TAG, "onFailure : ${e?.message}")
                 directionLiveData.postValue(Resource.Error(e?.localizedMessage))
             }
         }
@@ -94,7 +93,7 @@ class TripRepo @Inject constructor(
 
     fun connectToRideWebSockets() {
         Log.d(TAG, "connectToRideWebSockets")
-        okHttpClient.newWebSocket(webSocket, WebSocketCallBack())
+        okHttpClient.newWebSocket(webSocketRequest, WebSocketRideCallBack())
 
     }
 }

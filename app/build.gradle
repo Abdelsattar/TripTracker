@@ -63,6 +63,7 @@ ext {
     espresso_version = '3.3.0'
     jupiter_version = '5.7.1'
     core_test_version = '1.1.1'
+    mockito_kotlin_version = '3.1.0'
     mockito_core_version = '3.9.0'
     mockito_inline_version = '3.9.0'
     mock_webserver_version = '4.9.1'
@@ -81,7 +82,8 @@ dependencies {
     //testing
     testImplementation "org.junit.jupiter:junit-jupiter:$jupiter_version"
     testImplementation "android.arch.core:core-testing:$core_test_version"
-    testImplementation "org.mockito:mockito-core:$mockito_core_version"
+
+    testImplementation "org.mockito.kotlin:mockito-kotlin:$mockito_kotlin_version"
     testImplementation "org.mockito:mockito-inline:$mockito_inline_version"
     testImplementation("com.squareup.okhttp3:mockwebserver:$mock_webserver_version")
 
@@ -103,5 +105,8 @@ dependencies {
     implementation "com.jakewharton.rxbinding4:rxbinding:$rx_binding_version"
 
     implementation 'com.google.code.gson:gson:2.8.6'
+    testImplementation 'org.json:json:20180813'
 
+
+//    implementation 'io.fabric8:mockwebserver:0.1.8'
 }

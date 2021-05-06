@@ -14,7 +14,6 @@ import javax.inject.Singleton
         ActivityModule::class,
         RepositoryModule::class,
         ViewModelModule::class,
-        SchedulerModule::class,
         NetworkModule::class,
         AppModule::class
     ]

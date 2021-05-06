@@ -78,48 +78,29 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), OnMapRe
 
     }
 
-    override fun bindViewModel() {}
-
     private fun startRide() {
 
         rideUpdates = viewModel.getRideUpdatesObservable()
 
-        rideUpdates.bookingOpened.subscribe({ data ->
+        rideUpdates.bookingOpened.observe(this, { data ->
             handelBookingOpened(data)
-
-        }, { e ->
-            Log.d(TAG, "Booking Opened err ${e.localizedMessage} ")
         })
 
-        rideUpdates.vehicleLocation.subscribe(
-            {
-                handelVehicleLocationChanges(it)
-            }, { e ->
-                Log.d(TAG, "vehicle Location update err ${e.localizedMessage} ")
-            }
+        rideUpdates.vehicleLocation.observe(this, {
+            handelVehicleLocationChanges(it)
+        }
         )
 
-        rideUpdates.statusUpdated.subscribe({
+        rideUpdates.statusUpdated.observe(this, {
             handelStatusChanges(it)
-
-        }, { e ->
-            Log.d(TAG, "Status Updated err ${e.localizedMessage} ")
-
         })
 
-        rideUpdates.stopsChanges.subscribe({
-
+        rideUpdates.stopsChanges.observe(this, {
             handelStopsChanges(it)
-        }, { e ->
-            Log.d(TAG, "Stops Changes err ${e.localizedMessage} ")
-
         })
 
-        rideUpdates.bookingClosed.subscribe({
+        rideUpdates.bookingClosed.observe(this, {
             handelBookingClosed(it)
-        }, { e ->
-            Log.d(TAG, "Booking Closed err ${e.localizedMessage} ")
-
         })
 
     }
@@ -213,7 +194,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), OnMapRe
 
         viewModel.getDirections(startAddress, endAddress, stops)
             .observe(this, Observer { status ->
-                Log.d(TAG, "getting direction ${status.toString()} ")
+                Log.d(TAG, "getting direction $status ")
                 when (status) {
                     is Resource.Success -> status.data?.let {
                         runOnUiThread {
@@ -224,7 +205,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), OnMapRe
                         status.errorMessage?.let { showToast(it) }
                     }
                     else -> {
-                        showToast("Error Getting directions")
+                        showToast(getString(R.string.error_getting_directions))
                     }
                 }
 

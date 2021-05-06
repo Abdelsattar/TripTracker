@@ -3,11 +3,16 @@ package com.example.triptracker.helpers.rx
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.subjects.PublishSubject
 
-object RxBus {
+
+interface BaseRxBus {
+    fun publish(event: Any)
+}
+
+object RxBus : BaseRxBus {
 
     private val publisher = PublishSubject.create<Any>()
 
-    fun publish(event: Any){
+    override fun publish(event: Any) {
         publisher.onNext(event)
     }
 

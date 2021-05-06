@@ -13,7 +13,6 @@ abstract class BaseViewModel : ViewModel(), ViewModelLifecycle {
 
     override fun attachView(lifecycle: Lifecycle) {
         this.lifecycle = lifecycle
-        onViewAttached()
     }
 
     @Synchronized
@@ -22,8 +21,6 @@ abstract class BaseViewModel : ViewModel(), ViewModelLifecycle {
         clearDisposeBag()
         lifecycle = null
     }
-
-    abstract fun onViewAttached()
 
     override fun onCleared() {
         clearDisposeBag()
