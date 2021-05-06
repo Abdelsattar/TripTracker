@@ -10,7 +10,5 @@ class WebSocketRideCallBack : WebSocketListener() {
 
     override fun onMessage(webSocket: WebSocket, text: String) {
         RxBus.publish(RxEvent.Message(text))
-        println("onMessage $text")
-//        Log.d("Server", "$text")
     }
 }

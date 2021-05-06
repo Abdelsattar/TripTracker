@@ -92,7 +92,6 @@ class TripRepo @Inject constructor(
     }
 
     fun connectToRideWebSockets() {
-        Log.d(TAG, "connectToRideWebSockets")
         okHttpClient.newWebSocket(webSocketRequest, WebSocketRideCallBack())
 
     }

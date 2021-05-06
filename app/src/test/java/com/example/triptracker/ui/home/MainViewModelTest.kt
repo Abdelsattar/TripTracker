@@ -1,17 +1,18 @@
 package com.example.triptracker.ui.home
 
-//import io.fabric8.mockwebserver.DefaultMockServer
 import com.example.triptracker.InstantExecutorExtension
+import com.example.triptracker.WebSocketDataFactory
+import com.example.triptracker.WebSocketDataFactory.getLocationChangedData
+import com.example.triptracker.WebSocketMessageFactory
+import com.example.triptracker.WebSocketMessageFactory.getLocationChangedEvent
 import com.example.triptracker.data.remote.WebSocketRideCallBack
-import com.example.triptracker.data.remote.model.VehicleLocation
 import com.example.triptracker.data.repository.TripRepo
 import com.example.triptracker.helpers.rx.BaseRxBus
 import com.google.maps.GeoApiContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.WebSocket
-import okhttp3.mockwebserver.MockWebServer
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -29,17 +30,14 @@ import org.mockito.kotlin.any
 internal class MainViewModelTest {
 
 
-//    @get:Rule
-//    var rule: TestRule = InstantTaskExecutorRule()
-
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     lateinit var mockWebSocket: WebSocket
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
-    lateinit var request: Request
+    private lateinit var mockClient: OkHttpClient
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
-    private lateinit var mockClient: OkHttpClient
+    lateinit var request: Request
 
     @Mock
     private lateinit var geoContext: GeoApiContext
@@ -48,7 +46,8 @@ internal class MainViewModelTest {
     private lateinit var rxBus: BaseRxBus
 
     lateinit var tripRepo: TripRepo
-    val server = MockWebServer()
+
+
     lateinit var viewModel: MainViewModel
 
 
@@ -57,24 +56,84 @@ internal class MainViewModelTest {
         MockitoAnnotations.openMocks(this)
         tripRepo = TripRepo(geoContext, mockClient, request)
         viewModel = MainViewModel(tripRepo)
-
     }
 
+
     @Test
-    fun test1() {
+    fun `should update booking opened when get booking opened from websocket `() {
         //given
-        mockWebSocket(getLocationChangedEventStr())
-        val expectedValue = getLocationChangedEvent()
+        mockWebSocket(WebSocketMessageFactory.getBookingOpenedEvent())
+        val expectedValue = WebSocketDataFactory.getBookingOpenedData()
 
         ///when
         val updates = viewModel.getRideUpdatesObservable()
 
         //then
-        val actulValue = updates.vehicleLocation.value
-        Assertions.assertEquals(expectedValue, actulValue)
+        val actualValue = updates.bookingOpened.value
+        assertEquals(expectedValue, actualValue)
 
     }
 
+    @Test
+    fun `should update vehicleLocation when get location update event from websocket `() {
+        //given
+        mockWebSocket(getLocationChangedEvent())
+        val expectedValue = getLocationChangedData()
+
+        ///when
+        val updates = viewModel.getRideUpdatesObservable()
+
+        //then
+        val actualValue = updates.vehicleLocation.value
+        assertEquals(expectedValue, actualValue)
+
+    }
+
+    @Test
+    fun `should update ride status  when get status changed  event from websocket `() {
+        //given
+        mockWebSocket(WebSocketMessageFactory.getRideStatusEvent())
+        val expectedValue = WebSocketDataFactory.getRideStatusData()
+
+        ///when
+        val updates = viewModel.getRideUpdatesObservable()
+
+        //then
+        val actualValue = updates.statusUpdated.value
+        assertEquals(expectedValue, actualValue)
+
+    }
+
+    @Test
+    fun `should update stops when get stops changes event changed from websocket `() {
+        //given
+        mockWebSocket(WebSocketMessageFactory.getRideStatusEvent())
+        val expectedValue = WebSocketDataFactory.getRideStatusData()
+
+        ///when
+        val updates = viewModel.getRideUpdatesObservable()
+
+        //then
+        val actualValue = updates.statusUpdated.value
+        assertEquals(expectedValue, actualValue)
+
+    }
+
+
+    @Test
+    fun `should update stops when get ride closed event changed from websocket `() {
+        //given
+        mockWebSocket(WebSocketMessageFactory.getBookingClosedEvent())
+        val expectedValue = WebSocketDataFactory.getBookingClosedData()
+
+        ///when
+        val updates = viewModel.getRideUpdatesObservable()
+
+        //then
+        val actualValue = updates.bookingClosed.value
+        assertEquals(expectedValue, actualValue)
+
+    }
 
     //region helper functions
     private fun mockWebSocket(message: String) {
@@ -88,17 +147,6 @@ internal class MainViewModelTest {
             mockWebSocket
         }
     }
-
-    private fun getLocationChangedEventStr() = "{\n" +
-            "      \"event\": \"vehicleLocationUpdated\",\n" +
-            "      \"data\": {\n" +
-            "        \"address\": null,\n" +
-            "        \"lng\": 10.1,\n" +
-            "        \"lat\": 20.2\n" +
-            "      }\n" +
-            "    }"
-
-    private fun getLocationChangedEvent() = VehicleLocation(null, 20.2, 10.1)
 
     //endregion
 
