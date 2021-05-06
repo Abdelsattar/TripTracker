@@ -5,7 +5,6 @@ import com.example.triptracker.helpers.di.DaggerAppComponent
 import dagger.android.AndroidInjector
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasAndroidInjector
-import okhttp3.WebSocket
 import javax.inject.Inject
 
 class ApplicationClass : Application(), HasAndroidInjector {
@@ -13,14 +12,15 @@ class ApplicationClass : Application(), HasAndroidInjector {
     @Inject
     lateinit var dispatchingAndroidInjector: DispatchingAndroidInjector<Any>
 
-    private var socket: WebSocket? = null
-
     override fun onCreate() {
         super.onCreate()
 
         initDagger()
     }
 
+    /**
+     * init dagger object for dependency injection
+     */
     private fun initDagger() {
         DaggerAppComponent.builder()
             .application(this)

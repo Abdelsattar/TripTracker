@@ -44,7 +44,10 @@ class MainViewModel @Inject constructor(
     }
 
 
-    fun parsingMessageAndPublish(event: String?) {
+    /**
+     * parsing message coming from server based on event type and publish the changes
+     */
+    private fun parsingMessageAndPublish(event: String) {
         val jsonObject = JSONObject(event)
         val eventType = jsonObject.getString(EVENT_TYPE)
 
@@ -73,7 +76,11 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun getRideUpdatesObservable(): RideUpdates {
+
+    /**
+     * start ride and return Ride Updates have live data to observe on it
+     */
+    fun startRide(): RideUpdates {
         tripRepo.connectToRideWebSockets()
         return RideUpdates(
             bookingOpenedLiveData,
@@ -84,6 +91,10 @@ class MainViewModel @Inject constructor(
         )
     }
 
+
+    /**
+     * get directions between 2 points with stops in the route
+     */
     fun getDirections(
         pickup: LatLng,
         dropOff: LatLng,

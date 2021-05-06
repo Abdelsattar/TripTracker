@@ -23,13 +23,18 @@ class TripRepo @Inject constructor(
 
     val TAG = "TripRepo"
 
+
+    /**
+     * return a MutableLiveData of list of latlng that have the path between pickup and dropOff with
+     * number of stops between them
+     */
     fun getDirections(
         pickup: com.google.maps.model.LatLng,
         dropOff: com.google.maps.model.LatLng,
         stops: List<com.google.maps.model.LatLng>? = null
     ): MutableLiveData<Resource<List<LatLng>>> {
 
-        var tripPath = arrayListOf<com.google.maps.model.LatLng>()
+        val tripPath = arrayListOf<com.google.maps.model.LatLng>()
         val directionLiveData = MutableLiveData<Resource<List<LatLng>>>()
         directionLiveData.value = Resource.Loading()
 
@@ -40,7 +45,7 @@ class TripRepo @Inject constructor(
         directionsApiRequest.optimizeWaypoints(true)
 
         //add stops as a way points
-        var wayPointsStr = ""
+        var wayPointsStr: String
         stops?.let {
 
             if (stops.size == 1)
@@ -91,8 +96,11 @@ class TripRepo @Inject constructor(
         return directionLiveData
     }
 
+
+    /**
+     * connect to Ride webSocket and open a connection
+     */
     fun connectToRideWebSockets() {
         okHttpClient.newWebSocket(webSocketRequest, WebSocketRideCallBack())
-
     }
 }

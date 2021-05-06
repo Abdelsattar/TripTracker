@@ -4,7 +4,6 @@ import android.graphics.Color
 import android.util.Log
 import android.widget.Toast
 import android.widget.Toast.LENGTH_SHORT
-import androidx.lifecycle.Observer
 import com.example.triptracker.R
 import com.example.triptracker.data.Resource
 import com.example.triptracker.data.remote.model.Data
@@ -66,21 +65,26 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), OnMapRe
         binding.btnStartRide.setOnClickListener {
             binding.btnStartRide.text = getString(R.string.your_ride_is_coming)
             binding.btnStartRide.isEnabled = false
-            startRide()
+            startRideAndObserveChanges()
         }
     }
 
+    /**
+     * setup map view
+     */
     private fun setUpMapView() {
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
-
     }
 
-    private fun startRide() {
 
-        rideUpdates = viewModel.getRideUpdatesObservable()
+    /**
+     * start ride and observing changes to update the UI
+     */
+    private fun startRideAndObserveChanges() {
+
+        rideUpdates = viewModel.startRide()
 
         rideUpdates.bookingOpened.observe(this, { data ->
             handelBookingOpened(data)
@@ -88,8 +92,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), OnMapRe
 
         rideUpdates.vehicleLocation.observe(this, {
             handelVehicleLocationChanges(it)
-        }
-        )
+        })
 
         rideUpdates.statusUpdated.observe(this, {
             handelStatusChanges(it)
@@ -105,6 +108,9 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), OnMapRe
 
     }
 
+    /**
+     * Handel when we get booking opened update
+     */
     private fun handelBookingOpened(data: Data) {
         Log.d(TAG, "Booking Opened $data ")
         pickUpLatLng =
@@ -132,6 +138,9 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), OnMapRe
 
     }
 
+    /**
+     * Handel when we get vehicle Location update
+     */
     private fun handelVehicleLocationChanges(newVehicleLocation: VehicleLocation) {
 
         Log.d(TAG, "vehicle Location update $newVehicleLocation ")
@@ -143,11 +152,15 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), OnMapRe
         }
     }
 
+
+    /**
+     * Handel when we get ride status update
+     */
     private fun handelStatusChanges(status: String) {
         Log.d(TAG, "status Updated $status ")
 
         when (status) {
-            Constants.EVENT_STATUS_INVEHICLE -> {
+            Constants.EVENT_STATUS_IN_VEHICLE -> {
                 runOnUiThread {
                     binding.btnStartRide.text = getString(R.string.you_are_on_a_trip)
                     greyPolyLine?.remove()
@@ -160,25 +173,27 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), OnMapRe
                     getDirections(pickUpLatLng!!, dropLatLng!!, rideStops)
                 }
             }
-            Constants.EVENT_STATUS_DROPPOFF -> {
+            Constants.EVENT_STATUS_DROPP_OFF -> {
                 binding.btnStartRide.text = getString(R.string.your_trip_ended)
             }
-            else -> {
-                binding.btnStartRide.text = getString(R.string.start_new_ride)
-            }
+
         }
     }
 
+    /**
+     * Handel when we get stops changes update
+     */
     private fun handelStopsChanges(stops: List<VehicleLocation>) {
         Log.d(TAG, "Stops Changes $stops ")
         //TODO handle when stops change
     }
 
+    /**
+     * Handel when we get booking closed  update
+     */
     private fun handelBookingClosed(it: Boolean?) {
         Log.d(TAG, "Booking Closed $it ")
         runOnUiThread {
-            binding.btnStartRide.isEnabled = true
-            binding.btnStartRide.text = getString(R.string.start_new_ride)
 
             Toast.makeText(this, getString(R.string.your_trip_ended), LENGTH_SHORT).show()
         }
@@ -186,6 +201,9 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), OnMapRe
 
     //region map functions
 
+    /**
+     * geting the direction between startAddress, endAddress with stops inside the route
+     */
     private fun getDirections(
         startAddress: com.google.maps.model.LatLng,
         endAddress: com.google.maps.model.LatLng,
@@ -193,7 +211,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), OnMapRe
     ) {
 
         viewModel.getDirections(startAddress, endAddress, stops)
-            .observe(this, Observer { status ->
+            .observe(this, { status ->
                 Log.d(TAG, "getting direction $status ")
                 when (status) {
                     is Resource.Success -> status.data?.let {
@@ -212,7 +230,9 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), OnMapRe
             })
     }
 
-
+    /**
+     * draw the path of list of LatLng on map
+     */
     private fun showPath(latLngList: List<LatLng>) {
         val builder = LatLngBounds.Builder()
         for (latLng in latLngList) {
@@ -227,37 +247,49 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(), OnMapRe
         blackPolylineOptions.addAll(latLngList)
         blackPolyline = mMap.addPolyline(blackPolylineOptions)
 
-        originMarker = addOriginDestinationMarkerAndGet(latLngList[0])
+        originMarker = createMarkerAndAddToMap(latLngList[0])
         originMarker?.setAnchor(0.5f, 0.5f)
 
-        destinationMarker = addOriginDestinationMarkerAndGet(latLngList[latLngList.size - 1])
+        destinationMarker = createMarkerAndAddToMap(latLngList[latLngList.size - 1])
         destinationMarker?.setAnchor(0.5f, 0.5f)
 
         if (showStops) {
             rideStops.forEach {
-                stopMarker = addOriginDestinationMarkerAndGet(LatLng(it.lat, it.lng))
+                stopMarker = createMarkerAndAddToMap(LatLng(it.lat, it.lng))
                 stopMarker?.setAnchor(0.5f, 0.5f)
             }
         }
     }
 
-    private fun addOriginDestinationMarkerAndGet(latLng: LatLng): Marker? {
+    /**
+     * return location marker after creating and adding it to google maps
+     */
+    private fun createMarkerAndAddToMap(latLng: LatLng): Marker? {
         val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(getStopBitmap())
         return mMap.addMarker(
             MarkerOptions().position(latLng).flat(true).icon(bitmapDescriptor)
         )
     }
 
+    /**
+     * return car marker after creating and adding it to google maps
+     */
     private fun addCarMarkerAndGet(latLng: LatLng): Marker {
         val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(getCarBitmap(this))
         return mMap.addMarker(MarkerOptions().position(latLng).flat(true).icon(bitmapDescriptor))
     }
 
+    /**
+     * animate camera to specific LatLng
+     */
     private fun animateCamera(latLng: LatLng?) {
         val cameraPosition = CameraPosition.Builder().target(latLng).zoom(15.5f).build()
         mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition))
     }
 
+    /**
+     * update car marker location on the map based on the new LatLng
+     */
     private fun updateCarLocation(latLng: LatLng) {
         Log.d(TAG, "updateCarLocation")
 

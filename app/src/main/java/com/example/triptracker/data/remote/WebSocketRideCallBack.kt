@@ -1,6 +1,5 @@
 package com.example.triptracker.data.remote
 
-import android.util.Log
 import com.example.triptracker.helpers.rx.RxBus
 import com.example.triptracker.helpers.rx.RxEvent
 import okhttp3.WebSocket

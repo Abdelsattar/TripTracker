@@ -60,13 +60,13 @@ internal class MainViewModelTest {
 
 
     @Test
-    fun `should update booking opened when get booking opened from websocket `() {
+    fun `should update booking opened when get booking opened from webSocket `() {
         //given
         mockWebSocket(WebSocketMessageFactory.getBookingOpenedEvent())
         val expectedValue = WebSocketDataFactory.getBookingOpenedData()
 
         ///when
-        val updates = viewModel.getRideUpdatesObservable()
+        val updates = viewModel.startRide()
 
         //then
         val actualValue = updates.bookingOpened.value
@@ -75,13 +75,13 @@ internal class MainViewModelTest {
     }
 
     @Test
-    fun `should update vehicleLocation when get location update event from websocket `() {
+    fun `should update vehicleLocation when get location update event from webSocket `() {
         //given
         mockWebSocket(getLocationChangedEvent())
         val expectedValue = getLocationChangedData()
 
         ///when
-        val updates = viewModel.getRideUpdatesObservable()
+        val updates = viewModel.startRide()
 
         //then
         val actualValue = updates.vehicleLocation.value
@@ -90,13 +90,13 @@ internal class MainViewModelTest {
     }
 
     @Test
-    fun `should update ride status  when get status changed  event from websocket `() {
+    fun `should update ride status  when get status changed  event from webSocket `() {
         //given
         mockWebSocket(WebSocketMessageFactory.getRideStatusEvent())
         val expectedValue = WebSocketDataFactory.getRideStatusData()
 
         ///when
-        val updates = viewModel.getRideUpdatesObservable()
+        val updates = viewModel.startRide()
 
         //then
         val actualValue = updates.statusUpdated.value
@@ -105,29 +105,29 @@ internal class MainViewModelTest {
     }
 
     @Test
-    fun `should update stops when get stops changes event changed from websocket `() {
+    fun `should update stops when get stops changes event changed from webSocket `() {
         //given
-        mockWebSocket(WebSocketMessageFactory.getRideStatusEvent())
-        val expectedValue = WebSocketDataFactory.getRideStatusData()
+        mockWebSocket(WebSocketMessageFactory.getStopsChangedEvent())
+        val expectedValue = WebSocketDataFactory.getStopsChangedData()
 
         ///when
-        val updates = viewModel.getRideUpdatesObservable()
+        val updates = viewModel.startRide()
 
         //then
-        val actualValue = updates.statusUpdated.value
+        val actualValue = updates.stopsChanges.value
         assertEquals(expectedValue, actualValue)
 
     }
 
 
     @Test
-    fun `should update stops when get ride closed event changed from websocket `() {
+    fun `should update stops when get ride closed event changed from webSocket `() {
         //given
         mockWebSocket(WebSocketMessageFactory.getBookingClosedEvent())
         val expectedValue = WebSocketDataFactory.getBookingClosedData()
 
         ///when
-        val updates = viewModel.getRideUpdatesObservable()
+        val updates = viewModel.startRide()
 
         //then
         val actualValue = updates.bookingClosed.value

@@ -10,13 +10,18 @@ import kotlin.math.atan
 
 object MapUtils {
 
-    private const val TAG = "MapUtils"
 
+    /**
+     * return car image as bitmap
+     */
     fun getCarBitmap(context: Context): Bitmap {
         val bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.ic_car)
         return Bitmap.createScaledBitmap(bitmap, 50, 100, false)
     }
 
+    /**
+     * return stop point as bitmap
+     */
     fun getStopBitmap(): Bitmap {
         val height = 20
         val width = 20
@@ -30,6 +35,9 @@ object MapUtils {
         return bitmap
     }
 
+    /**
+     * return float the rotation angel based on 2 point Latlng
+     */
     fun getRotation(start: LatLng, end: LatLng): Float {
         val latDifference: Double = abs(start.latitude - end.latitude)
         val lngDifference: Double = abs(start.longitude - end.longitude)

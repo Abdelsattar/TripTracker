@@ -1,14 +1,11 @@
 <resources>
     <string name="app_name">Trip tracker</string>
     <string name="title_activity_home">Map</string>
-    <string name="dropoff_location">Drop off location</string>
+    <string name="dropOff_location">Drop off location</string>
     <string name="pickup_location">Pickup Location</string>
     <string name="start_ride">Start Ride</string>
-    <string name="start_new_ride">Start New Ride</string>
     <string name="your_ride_is_coming">Your Ride is coming</string>
-    <string name="your_ride_has_arrived">Your Ride has Arrived</string>
     <string name="you_are_on_a_trip">You are on a trip</string>
     <string name="your_trip_ended">Your trip ended</string>
-    <string name="trip_end">Trip End</string>
     <string name="error_getting_directions">Error Getting directions</string>
 </resources>

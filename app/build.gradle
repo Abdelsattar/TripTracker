@@ -7,11 +7,11 @@ plugins {
 
 android {
     compileSdkVersion 30
-    buildToolsVersion "30.0.2"
+    buildToolsVersion "30.0.3"
 
     defaultConfig {
         applicationId "com.example.triptracker"
-        minSdkVersion 16
+        minSdkVersion 17
         targetSdkVersion 30
         versionCode 1
         versionName "1.0"
@@ -55,18 +55,14 @@ ext {
     retrofit_version = "2.9.0"
     dagger_version = "2.35.1"
     rx_java_version = "3.0.0"
-    okhttp_version = '4.9.0'
-    rx_binding_version = '4.0.0'
+    okhttp_version = '4.9.1'
 
     //Testing
     junit_version = '1.1.2'
-    espresso_version = '3.3.0'
     jupiter_version = '5.7.1'
     core_test_version = '1.1.1'
     mockito_kotlin_version = '3.1.0'
-    mockito_core_version = '3.9.0'
     mockito_inline_version = '3.9.0'
-    mock_webserver_version = '4.9.1'
 }
 
 dependencies {
@@ -82,13 +78,11 @@ dependencies {
     //testing
     testImplementation "org.junit.jupiter:junit-jupiter:$jupiter_version"
     testImplementation "android.arch.core:core-testing:$core_test_version"
-
     testImplementation "org.mockito.kotlin:mockito-kotlin:$mockito_kotlin_version"
     testImplementation "org.mockito:mockito-inline:$mockito_inline_version"
-    testImplementation("com.squareup.okhttp3:mockwebserver:$mock_webserver_version")
+    testImplementation 'org.json:json:20180813'
 
     androidTestImplementation "androidx.test.ext:junit:$junit_version"
-    androidTestImplementation "androidx.test.espresso:espresso-core:$espresso_version"
 
     //dagger for dependency injection
     implementation "com.google.dagger:dagger:$dagger_version"
@@ -102,11 +96,6 @@ dependencies {
     // Rx-java/Android for reactive programming
     implementation "io.reactivex.rxjava3:rxandroid:$rx_java_version"
     implementation "io.reactivex.rxjava3:rxjava:$rx_java_version"
-    implementation "com.jakewharton.rxbinding4:rxbinding:$rx_binding_version"
 
     implementation 'com.google.code.gson:gson:2.8.6'
-    testImplementation 'org.json:json:20180813'
-
-
-//    implementation 'io.fabric8:mockwebserver:0.1.8'
 }

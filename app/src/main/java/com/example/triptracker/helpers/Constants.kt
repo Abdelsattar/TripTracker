@@ -10,7 +10,7 @@ object Constants {
     const val EVENT_BOOKING_CLOSED = "bookingClosed"
 
 
-    const val EVENT_STATUS_INVEHICLE = "inVehicle"
-    const val EVENT_STATUS_DROPPOFF = "droppedOff"
+    const val EVENT_STATUS_IN_VEHICLE = "inVehicle"
+    const val EVENT_STATUS_DROPP_OFF = "droppedOff"
 
 }
